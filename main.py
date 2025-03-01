@@ -26,7 +26,8 @@ def to_sql(df, db_conn_uri, ds_name):
     ds_name,
     db_conn_uri,
     if_exists='append',
-    index=False
+    index=False,
+    method='multi'
 )
     
 def db_loader(src_base_dir, db_conn_uri, ds_name):
@@ -42,6 +43,25 @@ def db_loader(src_base_dir, db_conn_uri, ds_name):
             to_sql(df, db_conn_uri, ds_name)
 
 
+def process_dataset(args):
+
+    src_base_dir = args[0]
+    db_conn_uri = args[1]
+    ds_name = args[2]
+
+    try:
+        print(f'Processing {ds_name}')
+        db_loader(src_base_dir, db_conn_uri, ds_name)
+    except NameError as ne:
+        print(ne)
+        pass 
+    except Exception as e:
+        print(e)
+        pass
+    finally:
+        print(f'Data Processing of {ds_name} is completed')
+
+
 def process_files(ds_names=None):
     src_base_dir = os.environ.get('SRC_BASE_DIR')
     db_host = os.environ.get('DB_HOST')
@@ -55,17 +75,7 @@ def process_files(ds_names=None):
     if not ds_names:
         ds_names=schemas.keys()
     for ds_name in ds_names:
-        try:
-            print(f'Processing {ds_name}')
-            db_loader(src_base_dir, db_conn_uri, ds_name)
-        except NameError as ne:
-            print(ne)
-            pass 
-        except Exception as e:
-            print(e)
-            pass
-        finally:
-            print(f'Data Processing of {ds_name} is completed')
+       process_dataset((src_base_dir, db_conn_uri, ds_name))
 
 
 if __name__ == '__main__':
@@ -74,4 +84,3 @@ if __name__ == '__main__':
         process_files(ds_names)
     else:
         process_files()
-
