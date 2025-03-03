@@ -3,6 +3,7 @@ import os
 import glob
 import json
 import pandas as pd
+import multiprocessing
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -74,9 +75,13 @@ def process_files(ds_names=None):
     
     if not ds_names:
         ds_names=schemas.keys()
+    parallel_processes = len(ds_names) if len(ds_names) < 3 else 3
+    pool = multiprocessing.Pool(parallel_processes)
+    process_dataset_args = []
     for ds_name in ds_names:
-       process_dataset((src_base_dir, db_conn_uri, ds_name))
+       process_dataset_args.append((src_base_dir, db_conn_uri, ds_name))
 
+    pool.map(process_dataset, process_dataset_args)
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
